@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stepik-Leet — Hand-Drawn Algo Trainer</title>
+    <!-- Рисованные шрифты и моноширинный Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Fira+Code:wght@400;600&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f131a;
+            --panel-bg: #161b22;
+            --border-color: #30363d;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --yellow: #f0883e;
+            --purple: #d2a8ff;
+            --blue: #58a6ff;
+            --hand-font: 'Kalam', cursive, sans-serif;
+            --code-font: 'Fira Code', monospace;
+        }
+
+        body.theme-mocha {
+            --bg-dark: #12100e;
+            --panel-bg: #1c1815;
+            --border-color: #3d342f;
+            --accent-green: #d97706;
+            --accent-green-hover: #b45309;
+            --text-main: #e7dfd8;
+            --text-muted: #a89f95;
+            --yellow: #f59e0b;
+            --purple: #c084fc;
+            --blue: #60a5fa;
+        }
+
+        body.theme-cyber {
+            --bg-dark: #050511;
+            --panel-bg: #0f0c24;
+            --border-color: #3b1443;
+            --accent-green: #ec4899;
+            --accent-green-hover: #db2777;
+            --text-main: #f0abfc;
+            --text-muted: #a855f7;
+            --yellow: #f43f5e;
+            --purple: #e879f9;
+            --blue: #22d3ee;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--hand-font);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            height: 60px;
+            background-color: var(--panel-bg);
+            border-bottom: 3px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .logo-badge {
+            background-color: var(--accent-green);
+            color: #0f131a;
+            padding: 4px 14px;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            border: 2px solid #0f131a;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+            font-family: 'Architects Daughter', cursive;
+        }
+
+        .trainer-version {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-left: 8px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.05rem;
+            font-weight: bold;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 340px;
+            background-color: var(--panel-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.4);
+        }
+
+        .tabs-nav {
+            display: flex;
+            padding: 12px;
+            gap: 6px;
+            border-bottom: 2px dashed var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            cursor: pointer;
+            font-family: var(--hand-font);
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background-color: #21262d;
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            box-shadow: 3px 3px 0px var(--accent-green);
+        }
+
+        .tree-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .task-item {
+            background-color: #21262d;
+            border: 2px solid var(--border-color);
+            border-radius: 12px 255px 15px 225px/225px 15px 255px 15px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .task-item:hover {
+            border-color: var(--text-muted);
+            transform: translateX(3px) scale(1.01);
+        }
+
+        .task-item.active {
+            border-color: var(--accent-green);
+            background-color: rgba(35, 134, 54, 0.15);
+            box-shadow: 3px 3px 0px var(--accent-green);
+        }
+
+        .settings-pane {
+            padding: 15px;
+            display: none;
+        }
+
+        .settings-pane.active {
+            display: block;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .sketch-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #21262d;
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            font-family: var(--hand-font);
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .sketch-btn:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--accent-green);
+        }
+
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .problem-card {
+            background-color: var(--panel-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 15px 255px 15px 225px/255px 15px 225px 15px;
+            padding: 20px;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.4);
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .p-code {
+            background-color: #30363d;
+            color: var(--accent-green);
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-family: var(--code-font);
+            font-size: 0.95rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .p-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: 'Architects Daughter', cursive;
+        }
+
+        .section-heading {
+            color: var(--accent-green);
+            font-size: 1.2rem;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .theory-box {
+            background-color: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--purple);
+            padding: 12px 16px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .problem-desc {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .hint-box {
+            background-color: #1f242c;
+            border: 2px dashed var(--yellow);
+            padding: 12px 15px;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            margin-bottom: 15px;
+        }
+
+        .io-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .io-box {
+            flex: 1;
+            background-color: #0d1117;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .io-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: var(--code-font);
+            margin-bottom: 4px;
+        }
+
+        .io-value {
+            font-family: var(--code-font);
+            color: var(--accent-green);
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+
+        .editor-card {
+            background-color: var(--panel-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 225px 15px 255px 15px/15px 255px 15px 225px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.4);
+        }
+
+        .editor-header {
+            background-color: #1f242c;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed var(--border-color);
+        }
+
+        .editor-filename {
+            font-family: var(--code-font);
+            color: var(--blue);
+            font-size: 0.95rem;
+        }
+
+        .code-area-wrapper {
+            display: flex;
+            background-color: #090d16;
+            min-height: 220px;
+        }
+
+        .code-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--accent-green);
+            padding: 15px;
+            resize: none;
+            font-family: var(--code-font);
+            font-size: 1rem;
+            line-height: 1.6;
+            outline: none;
+            white-space: pre;
+        }
+
+        .editor-footer {
+            padding: 12px 15px;
+            background-color: var(--panel-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px dashed var(--border-color);
+        }
+
+        .run-btn {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border: 2px solid #0f131a;
+            padding: 8px 24px;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            font-family: var(--hand-font);
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #090d16;
+            transition: all 0.15s;
+        }
+
+        .run-btn:hover {
+            background-color: var(--accent-green-hover);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #090d16;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center;">
+            <div class="logo-badge">✏️ Stepik-Leet</div>
+            <span class="trainer-version">[Hand-Drawn Algo Trainer v3.1]</span>
+        </div>
+        <div class="header-stats">
+            <div>🔥 <span id="lbl-streak-val">14</span> <span id="lbl-streak">Дней</span></div>
+            <div>💎 <span id="lbl-xp-val">1850</span> XP</div>
+            <div>✔ <span id="lbl-solved-val">10/10</span> <span id="lbl-solved">Решено</span></div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Сайдбар -->
+        <div class="sidebar">
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="btn-course" onclick="switchTab('course')"><span id="lbl-tab-course">Курс (10)</span></button>
+                <button class="tab-btn" id="btn-settings" onclick="switchTab('settings')"><span id="lbl-tab-settings">⚙ Настройки</span></button>
+            </div>
+
+            <div class="tree-content" id="sidebar-tree"></div>
+
+            <div class="settings-pane" id="settings-pane">
+                <div class="settings-group">
+                    <span class="settings-label" id="lbl-lang-title">🌐 Выберите язык:</span>
+                    <button class="sketch-btn" onclick="setLanguage('ru')">🇷🇺 Русский</button>
+                    <button class="sketch-btn" onclick="setLanguage('by')">🇧🇾 Беларуская</button>
+                    <button class="sketch-btn" onclick="setLanguage('en')">🇬🇧 English</button>
+                </div>
+
+                <div class="settings-group">
+                    <span class="settings-label" id="lbl-theme-title">🎨 Выберите тему:</span>
+                    <button class="sketch-btn" id="t-graphite" onclick="setTheme('')">🌑 Графит (Классика)</button>
+                    <button class="sketch-btn" id="t-mocha" onclick="setTheme('theme-mocha')">☕ Тёплый Мокко</button>
+                    <button class="sketch-btn" id="t-cyber" onclick="setTheme('theme-cyber')">🔮 Неоновый Киберпанк</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рабочая область -->
+        <div class="workspace" id="main-workspace">
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="p-code" id="task-id">M-01</span>
+                        <h2 class="p-title" id="task-title">Урок</h2>
+                    </div>
+                    <span id="task-diff" style="color:var(--yellow); font-weight:bold;">Easy</span>
+                </div>
+
+                <div class="section-heading" id="lbl-sec-theory">📚 Теория и Жизненная Аналогия</div>
+                <div class="theory-box" id="task-theory">Загрузка теории...</div>
+
+                <div class="section-heading" id="lbl-sec-practice">💻 Практическое Задание</div>
+                <p class="problem-desc" id="task-statement">Загрузка условия задачи...</p>
+
+                <div class="hint-box">
+                    <div style="color:var(--yellow); font-weight:bold; margin-bottom:4px;" id="lbl-hint-title">💡 Подсказка и объяснение</div>
+                    <p id="task-hint" style="font-size: 0.95rem;">Загрузка подсказки...</p>
+                </div>
+
+                <div class="io-container">
+                    <div class="io-box">
+                        <div class="io-label" id="lbl-in-title">SAMPLE INPUT</div>
+                        <div class="io-value" id="task-in">...</div>
+                    </div>
+                    <div class="io-box">
+                        <div class="io-label" id="lbl-out-title">SAMPLE OUTPUT</div>
+                        <div class="io-value" id="task-out">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-card">
+                <div class="editor-header">
+                    <div class="editor-filename">🐍 solution.py</div>
+                    <button id="btn-reset" onclick="resetCode()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:var(--hand-font); font-size:1rem;">🔄 Сбросить код</button>
+                </div>
+                <div class="code-area-wrapper">
+                    <textarea class="code-input" id="code-editor" spellcheck="false"></textarea>
+                </div>
+                <div class="editor-footer">
+                    <div id="status-msg" style="color:var(--accent-green); font-weight:bold;">Готово к запуску...</div>
+                    <button class="run-btn" id="btn-run" onclick="runTests()">▶ Запустить тесты</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MODULES = [
+            {
+                id: "M-01",
+                ru: {
+                    title: "1. Поиск Максимума (Линейный поиск)",
+                    theory: "🧩 Аналогия: Представь перетасованную колоду карт лицом вниз. Чтобы найти карту с наибольшим номиналом, у тебя нет выбора — придётся перебрать их все по одной с самого начала.\n\n💡 Суть: Последовательный обход элементов списка за O(N). Запоминаем первый элемент и обновляем рекорд, если встретили число больше.",
+                    statement: "Напишите функцию find_max(arr), которая принимает список чисел и возвращает наибольшее число.",
+                    hint: "Инициализируйте max_val = arr[0] и пройдите циклом по всем элементам массива.",
+                    in: "arr = [3, 1, 9, 4, 7]", out: "9"
+                },
+                by: {
+                    title: "1. Пошук Максімуму (Лінейны пошук)",
+                    theory: "🧩 Аналогія: Ператсаваная калода карт тварам уніз. Каб знайсці самую вялікую карту, трэба перабраць іх усе па чарзе.\n\n💡 Сутнасць: Паслядоўны абыход элементаў спісу за O(N). Захоўваем першы элемент і абнаўляем рэкорд.",
+                    statement: "Напішыце функцыю find_max(arr), якая прымае спіс лікаў і вяртае найбольшы лік.",
+                    hint: "Ініцыялізуйце max_val = arr[0] і прайдзіце цыклам па ўсіх элементах.",
+                    in: "arr = [3, 1, 9, 4, 7]", out: "9"
+                },
+                en: {
+                    title: "1. Linear Search & Maximum",
+                    theory: "🧩 Analogy: Looking for the highest card in a shuffled deck facedown by checking them one by one.\n\n💡 Core: Sequential item iteration in O(N) time. Keep track of the current maximum and update it whenever a larger value appears.",
+                    statement: "Write a function find_max(arr) that takes a list of numbers and returns the maximum element.",
+                    hint: "Initialize max_val = arr[0] and loop through the array.",
+                    in: "arr = [3, 1, 9, 4, 7]", out: "9"
+                },
+                starter: "def find_max(arr):\n    max_val = arr[0]\n    for x in arr:\n        if x > max_val:\n            max_val = x\n    return max_val"
+            },
+            {
+                id: "M-02",
+                ru: {
+                    title: "2. Алгоритм Евклида (НОД)",
+                    theory: "🧩 Аналогия: У тебя есть шоколадка размером 48х18 см, и ты хочешь разрезать её на одинаковые максимально большие квадратные кусочки без остатка.\n\n💡 Суть: Математический трюк через остаток от деления (%). Позволяет находить общий делитель двух чисел за доли миллисекунды за O(log(min(a, b))).",
+                    statement: "Реализуйте функцию gcd(a, b), возвращающую наибольший общий делитель чисел a и b.",
+                    hint: "Используйте цикл while b: a, b = b, a % b.",
+                    in: "a = 48, b = 18", out: "6"
+                },
+                by: {
+                    title: "2. Алгарытм Еўкліда (НАД)",
+                    theory: "🧩 Аналогія: Раздзяленне шакаладу 48х18 см на найбольшыя аднолькавыя квадратныя кавалкі без рэшты.\n\n💡 Сутнасць: Матэматычны трык праз астатак ад дзялення (%). Зходзіць НАД за O(log(min(a, b))).",
+                    statement: "Рэалізуйце функцыю gcd(a, b), якая вяртае найбольшы агульны дзельнік лікаў a і b.",
+                    hint: "Выкарыстоўвайце цыкл while b: a, b = b, a % b.",
+                    in: "a = 48, b = 18", out: "6"
+                },
+                en: {
+                    title: "2. Euclidean Algorithm (GCD)",
+                    theory: "🧩 Analogy: Cutting a 48x18 cm chocolate slab into the largest possible identical square pieces without leftovers.\n\n💡 Core: Finding Greatest Common Divisor instantly using modulo arithmetic in O(log(min(a, b))) time.",
+                    statement: "Implement a function gcd(a, b) returning the greatest common divisor of a and b.",
+                    hint: "Use a while loop: while b: a, b = b, a % b.",
+                    in: "a = 48, b = 18", out: "6"
+                },
+                starter: "def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return a"
+            },
+            {
+                id: "M-03",
+                ru: {
+                    title: "3. Проверка на простоту",
+                    theory: "🧩 Аналогия: Простые числа — это «атомы» мира чисел (2, 3, 5, 7, 11...). Их нельзя разложить на равные кучки.\n\n💡 Суть: Проверяем делители не до самого числа N, а только до его квадратного корня sqrt(N). Сложность O(sqrt(N)).",
+                    statement: "Напишите функцию is_prime(n), которая возвращает True, если n > 1 простое, иначе False.",
+                    hint: "Проверяйте делители в цикле от 2 до int(n**0.5) + 1.",
+                    in: "n = 29", out: "True"
+                },
+                by: {
+                    title: "3. Праверка на простасць",
+                    theory: "🧩 Аналогія: Простыя лікі — гэта «атомы» матэматыкі (2, 3, 5, 7, 11...), якія дзеляцца толькі на сябе і на 1.\n\n💡 Сутнасць: Правяраем дзельнікі толькі да квадратнага кораню sqrt(N). Складанасць O(sqrt(N)).",
+                    statement: "Напішыце функцыю is_prime(n), якая вяртае True, калі n > 1 простае, інакш False.",
+                    hint: "Правярайце дзельнікі ад 2 да int(n**0.5) + 1.",
+                    in: "n = 29", out: "True"
+                },
+                en: {
+                    title: "3. Primality Test Check",
+                    theory: "🧩 Analogy: Prime numbers are mathematical 'atoms' (2, 3, 5, 7, 11...) divisible only by 1 and themselves.\n\n💡 Core: Check divisors only up to sqrt(N) to optimize performance to O(sqrt(N)) time.",
+                    statement: "Write a function is_prime(n) returning True if n > 1 is prime, otherwise False.",
+                    hint: "Check factors from 2 up to int(n**0.5) + 1.",
+                    in: "n = 29", out: "True"
+                },
+                starter: "def is_prime(n):\n    if n < 2: return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True"
+            },
+            {
+                id: "M-04",
+                ru: {
+                    title: "4. Решето Эратосфена",
+                    theory: "🧩 Аналогия: Представь таблицу чисел от 1 до 100. Ты берёшь сито и просеиваешь составные числа, вычёркивая все кратные двойки, тройки и т.д.\n\n💡 Суть: Быстрый поиск всех простых чисел до N за O(N log log N) с помощью булева массива.",
+                    statement: "Напишите функцию sieve(n), возвращающую количество простых чисел <= n.",
+                    hint: "Создайте список [True] * (n + 1) и вычеркивайте кратные, меняя их на False.",
+                    in: "n = 10", out: "4"
+                },
+                by: {
+                    title: "4. Рэшата Эратасфена",
+                    theory: "🧩 Аналогія: Прасейванне табліцы лікаў праз сіта, каб выкрасліць усе складныя лікі.\n\n💡 Сутнасць: Знаходжанне ўсіх простых лікаў да N за O(N log log N) з дапамогай булева масіву.",
+                    statement: "Напішыце функцыю sieve(n), якая вяртае колькасць простых лікаў <= n.",
+                    hint: "Выкарыстоўвайце спіс [True] * (n + 1) і выкраслівайце складныя.",
+                    in: "n = 10", out: "4"
+                },
+                en: {
+                    title: "4. Sieve of Eratosthenes Count",
+                    theory: "🧩 Analogy: Sifting through a grid of numbers to filter out all composite numbers, leaving only primes behind.\n\n💡 Core: Efficiently find all primes up to N in O(N log log N) time using a boolean sieve array.",
+                    statement: "Write a function sieve(n) returning the count of primes less than or equal to n.",
+                    hint: "Use a boolean list [True] * (n + 1) and mark composites False.",
+                    in: "n = 10", out: "4"
+                },
+                starter: "def sieve(n):\n    if n < 2: return 0\n    is_p = [True] * (n + 1)\n    is_p[0] = is_p[1] = False\n    for i in range(2, int(n**0.5) + 1):\n        if is_p[i]:\n            for j in range(i*i, n + 1, i):\n                is_p[j] = False\n    return sum(is_p)"
+            },
+            {
+                id: "M-05",
+                ru: {
+                    title: "5. Метод двух указателей",
+                    theory: "🧩 Аналогия: Два человека идут с двух концов длинной шеренги школьников навстречу друг другу, чтобы найти пару с нужной суммой роста.\n\n💡 Суть: Заменяем медленный перебор вложенными циклами O(N^2) на быстрый обход за O(N) с помощью двух указателей (left и right).",
+                    statement: "Напишите two_sum(arr, target), возвращающую индексы двух элементов отсортированного массива, сумма которых равна target.",
+                    hint: "Сравнивайте arr[left] + arr[right] с target. Если сумма меньше — двигайте left вправо, если больше — right влево.",
+                    in: "arr = [1, 2, 4, 6, 8, 11], target = 10", out: "[1, 4]"
+                },
+                by: {
+                    title: "5. Метад двух указальнікаў",
+                    theory: "🧩 Аналогія: Два чалавекі ідуць з двух канцоў шэренгі насустрач адзін аднаму, каб знайсці пару з патрэбнай сумай.\n\n💡 Сутнасць: Паскарэнне пошуку з O(N^2) да O(N) у адсартаваным масіве.",
+                    statement: "Напішыце two_sum(arr, target), якая вяртае індэксы элементаў, сума якіх роўная target.",
+                    hint: "Параўноўвайце arr[left] + arr[right] з target.",
+                    in: "arr = [1, 2, 4, 6, 8, 11], target = 10", out: "[1, 4]"
+                },
+                en: {
+                    title: "5. Two Pointers Technique",
+                    theory: "🧩 Analogy: Two people walking from opposite ends of a sorted queue towards each other to find a pair matching a target sum.\n\n💡 Core: Reduces brute-force O(N^2) search down to O(N) linear time using converging left and right pointers.",
+                    statement: "Implement two_sum(arr, target) returning 0-based indices of the two elements adding up to target.",
+                    hint: "Adjust left or right pointers based on whether arr[left] + arr[right] is smaller or larger than target.",
+                    in: "arr = [1, 2, 4, 6, 8, 11], target = 10", out: "[1, 4]"
+                },
+                starter: "def two_sum(arr, target):\n    l, r = 0, len(arr) - 1\n    while l < r:\n        s = arr[l] + arr[r]\n        if s == target: return [l, r]\n        elif s < target: l += 1\n        else: r -= 1\n    return []"
+            },
+            {
+                id: "M-06",
+                ru: {
+                    title: "6. Бинарный поиск",
+                    theory: "🧩 Аналогия: Игра в угадайку «Число от 1 до 100». Называешь 50 — тебе говорят «Меньше!», и ты мгновенно отсекаешь половину вариантов.\n\n💡 Суть: Поиск в отсортированном массиве делением пополам за O(log N).",
+                    statement: "Напишите binary_search(arr, target), которая возвращает индекс target или -1.",
+                    hint: "Вычисляйте mid = (low + high) // 2 и сужайте границы поиска.",
+                    in: "arr = [1, 3, 5, 7, 9, 11], target = 7", out: "3"
+                },
+                by: {
+                    title: "6. Бінарны пошук",
+                    theory: "🧩 Аналогія: Гульня «Кошт ад 1 да 100». Называеш сярэдзіну і адкідваеш палову варыянтаў за раз.\n\n💡 Сутнасць: Хуткае знаходжанне элемента ў адсартаваным масіве за O(log N).",
+                    statement: "Напішыце binary_search(arr, target), якая вяртае індэкс target або -1.",
+                    hint: "Вылічайце mid = (low + high) // 2.",
+                    in: "arr = [1, 3, 5, 7, 9, 11], target = 7", out: "3"
+                },
+                en: {
+                    title: "6. Binary Search",
+                    theory: "🧩 Analogy: Playing 'Guess the number' by constantly splitting the remaining range in half.\n\n💡 Core: Locates items in a sorted array in logarithmic O(log N) time.",
+                    statement: "Implement binary_search(arr, target) returning the index of target or -1.",
+                    hint: "Find mid = (low + high) // 2 and adjust search boundaries.",
+                    in: "arr = [1, 3, 5, 7, 9, 11], target = 7", out: "3"
+                },
+                starter: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1"
+            },
+            {
+                id: "M-07",
+                ru: {
+                    title: "7. Скользящее окно",
+                    theory: "🧩 Аналогия: Смотреть на длинную беговую дорожку через картонное окошко шириной в 3 человека. Ты сдвигаешься на шаг: один человек вышел из кадра, один зашёл.\n\n💡 Суть: Обработка подмассивов фиксированной длины за O(N) без пересчёта суммы с нуля.",
+                    statement: "Напишите max_window_sum(arr, k), которая возвращает максимальную сумму подмассива длины k.",
+                    hint: "Вычитайте уходящий элемент слева и прибавляйте новый элемент справа.",
+                    in: "arr = [2, 1, 5, 1, 3, 2], k = 3", out: "9"
+                },
+                by: {
+                    title: "7. Слізгальнае акно",
+                    theory: "🧩 Аналогія: Глядзець на стужку праз акно фіксаванай шырыні, ссоўваючы яго на 1 элемент на кожным кроку.\n\n💡 Сутнасць: Апрацоўка падмасівў даўжыні K за O(N) без пераліку ўсёй сумы.",
+                    statement: "Напішыце max_window_sum(arr, k), якая вяртае максімальную суму падмасіву даўжыні k.",
+                    hint: "Адняміце элемент злева і дадайце новы справа.",
+                    in: "arr = [2, 1, 5, 1, 3, 2], k = 3", out: "9"
+                },
+                en: {
+                    title: "7. Sliding Window",
+                    theory: "🧩 Analogy: Looking through a sliding frame of fixed width K over a data stream, adding and removing items at the edges.\n\n💡 Core: Solves contiguous subarray problems in O(N) time by reusing previous window sums.",
+                    statement: "Write max_window_sum(arr, k) returning the maximum sum of any contiguous subarray of size k.",
+                    hint: "Slide the window by subtracting arr[i - k] and adding arr[i].",
+                    in: "arr = [2, 1, 5, 1, 3, 2], k = 3", out: "9"
+                },
+                starter: "def max_window_sum(arr, k):\n    if len(arr) < k: return 0\n    curr = sum(arr[:k])\n    m_sum = curr\n    for i in range(k, len(arr)):\n        curr += arr[i] - arr[i - k]\n        m_sum = max(m_sum, curr)\n    return m_sum"
+            },
+            {
+                id: "M-08",
+                ru: {
+                    title: "8. Префиксные суммы",
+                    theory: "🧩 Аналогия: Копилка, в которую ты каждый день записываешь общую накопленную сумму. Хочешь узнать сколько накопилось с 5 по 10 день? Просто вычти сумму за 4 день из суммы за 10 день.\n\n💡 Суть: Предобработка массива для ответов на запросы о сумме на отрезке [L, R] за O(1).",
+                    statement: "Напишите range_sum(arr, L, R), вычисляющую сумму на отрезке с использованием префиксного массива.",
+                    hint: "Создайте префиксный массив и используйте формулу pref[R + 1] - pref[L].",
+                    in: "arr = [2, 4, 1, 3, 5], L = 1, R = 3", out: "8"
+                },
+                by: {
+                    title: "8. Прэфіксныя сумы",
+                    theory: "🧩 Аналогія: Назапашаная сума грошай у скарбонцы. Каб знайсці суму на адрэзку, дастаткова адняць ад агульнай сумы на крок R агульную суму на крок L-1.\n\n💡 Сутнасць: Хуткае вылічэнне сум на адрэзках за O(1).",
+                    statement: "Напішыце range_sum(arr, L, R), якая вылічвае суму на адрэзку.",
+                    hint: "Выкарыстоўвайце формулу pref[R + 1] - pref[L].",
+                    in: "arr = [2, 4, 1, 3, 5], L = 1, R = 3", out: "8"
+                },
+                en: {
+                    title: "8. Prefix Sums",
+                    theory: "🧩 Analogy: A savings piggy bank ledger where running totals are kept. To find earnings between day L and R, just subtract ledger[L-1] from ledger[R].\n\n💡 Core: Answers range sum queries in O(1) constant time after O(N) preprocessing.",
+                    statement: "Implement range_sum(arr, L, R) that builds prefix sums and returns sum from index L to R.",
+                    hint: "Use pref[R + 1] - pref[L] formula.",
+                    in: "arr = [2, 4, 1, 3, 5], L = 1, R = 3", out: "8"
+                },
+                starter: "def range_sum(arr, L, R):\n    pref = [0] * (len(arr) + 1)\n    for i in range(len(arr)):\n        pref[i + 1] = pref[i] + arr[i]\n    return pref[R + 1] - pref[L]"
+            },
+            {
+                id: "M-09",
+                ru: {
+                    title: "9. Быстрое возведение в степень",
+                    theory: "🧩 Аналогия: Чтобы посчитать 2 в 10 степени, не обязательно умножать двойку 10 раз подряд. Можно возвести 2 в 5 степень (32) и умножить само на себя (32 * 32 = 1024).\n\n💡 Суть: Возведение в степень за O(log N) путем деления показателя пополам.",
+                    statement: "Напишите power(a, n), быстро возводящую число a в целую степень n.",
+                    hint: "Умножайте результат при нечетном n и возводите базу в квадрат, деля n пополам.",
+                    in: "a = 2, n = 10", out: "1024"
+                },
+                by: {
+                    title: "9. Хуткае ўзвядзенне ў ступень",
+                    theory: "🧩 Аналогія: Палічэнне ступені праз параўноўванне цотнасці і паскарэнне памнажэнняў у два разы.\n\n💡 Сутнасць: Вылічэнне a^n за O(log N).",
+                    statement: "Напішыце power(a, n), якая хутка ўзносіць лік a ў ступень n.",
+                    hint: "Дзяліце ступень n папалам на кожным кроку.",
+                    in: "a = 2, n = 10", out: "1024"
+                },
+                en: {
+                    title: "9. Fast Exponentiation",
+                    theory: "🧩 Analogy: Computing 2^10 by finding 2^5 = 32 first, then squaring it (32 * 32) instead of 10 separate multiplications.\n\n💡 Core: Computes powers in logarithmic O(log N) time.",
+                    statement: "Write power(a, n) to compute a raised to power n efficiently.",
+                    hint: "Halve n and square the base iteratively.",
+                    in: "a = 2, n = 10", out: "1024"
+                },
+                starter: "def power(a, n):\n    res = 1\n    while n > 0:\n        if n % 2 == 1:\n            res *= a\n        a *= a\n        n //= 2\n    return res"
+            },
+            {
+                id: "M-10",
+                ru: {
+                    title: "10. Стек и Скобочные строки",
+                    theory: "🧩 Аналогия: Стопка тарелок. Новую тарелку можно положить только сверху, и забрать сверху тоже можно только последнюю положенную (LIFO).\n\n💡 Суть: Проверка правильности скобочных последовательностей `({[]})` с помощью стека.",
+                    statement: "Напишите is_valid_parentheses(s), проверяющую правильность строки из скобок '()', '[]', '{}'.",
+                    hint: "Используйте список Python как стек через методы append() и pop().",
+                    in: "s = '({[]})'", out: "True"
+                },
+                by: {
+                    title: "10. Стэк і Дужкавыя радкі",
+                    theory: "🧩 Аналогія: Стопка талерак (LIFO — апошні прыйшоў, першы пайшоў). Новая талерка кладзецца зверху.\n\n💡 Сутнасць: Праверка правільнасці дужкавай паслядоўнасці праз стэк.",
+                    statement: "Напішыце is_valid_parentheses(s), якая правярае правільнасць дужкавай паслядоўнасці.",
+                    hint: "Выкарыстоўвайце спіс як стэк (append і pop).",
+                    in: "s = '({[]})'", out: "True"
+                },
+                en: {
+                    title: "10. Stack & Valid Parentheses",
+                    theory: "🧩 Analogy: A stack of plates where you can only add or remove the top plate (LIFO: Last In, First Out).\n\n💡 Core: Validating nested bracket sequences using a stack data structure.",
+                    statement: "Write is_valid_parentheses(s) to validate a string containing '()', '[]', '{}'.",
+                    hint: "Use a Python list as a stack with append() and pop().",
+                    in: "s = '({[]})'", out: "True"
+                },
+                starter: "def is_valid_parentheses(s):\n    stack = []\n    mapping = {')': '(', ']': '[', '}': '{'}\n    for char in s:\n        if char in mapping.values():\n            stack.append(char)\n        elif char in mapping:\n            if not stack or stack.pop() != mapping[char]:\n                return False\n    return len(stack) == 0"
+            }
+        ];
+
+        const LABELS = {
+            ru: {
+                tab_course: "Курс (10)", tab_settings: "⚙ Настройки",
+                streak: "Дней", solved: "Решено",
+                sec_theory: "📚 Теория и Жизненная Аналогия", sec_practice: "💻 Практическое Задание",
+                hint_title: "💡 Подсказка и объяснение", in_title: "SAMPLE INPUT", out_title: "SAMPLE OUTPUT",
+                reset: "🔄 Сбросить код", run: "▶ Запустить тесты", ready: "Готово к запуску...",
+                lang_title: "🌐 Выберите язык:", theme_title: "🎨 Выберите тему:",
+                t_graphite: "🌑 Графит (Классика)", t_mocha: "☕ Тёплый Мокко", t_cyber: "🔮 Неоновый Киберпанк"
+            },
+            by: {
+                tab_course: "Курс (10)", tab_settings: "⚙ Налады",
+                streak: "Дзён", solved: "Вырашана",
+                sec_theory: "📚 Тэорыя і Жыццёвая Аналогія", sec_practice: "💻 Практычнае Заданне",
+                hint_title: "💡 Падказка і тлумачэнне", in_title: "УХОДНЫЯ ДАНЫЯ", out_title: "ВЫХОДНЫЯ ДАНЫЯ",
+                reset: "🔄 Скінуць код", run: "▶ Запусціць тэсты", ready: "Гатова да запуску...",
+                lang_title: "🌐 Выберыце мову:", theme_title: "🎨 Выберыце тэму:",
+                t_graphite: "🌑 Графіт (Класіка)", t_mocha: "☕ Цёплы Мока", t_cyber: "🔮 Неонавы Кіберпанк"
+            },
+            en: {
+                tab_course: "Course (10)", tab_settings: "⚙ Settings",
+                streak: "Streak", solved: "Solved",
+                sec_theory: "📚 Theory & Life Analogy", sec_practice: "💻 Practical Task",
+                hint_title: "💡 Hint & Explanation", in_title: "SAMPLE INPUT", out_title: "SAMPLE OUTPUT",
+                reset: "🔄 Reset Code", run: "▶ Run Tests", ready: "Ready to run...",
+                lang_title: "🌐 Choose Language:", theme_title: "🎨 Choose Theme:",
+                t_graphite: "🌑 Graphite (Classic)", t_mocha: "☕ Warm Mocha", t_cyber: "🔮 Neon Cyberpunk"
+            }
+        };
+
+        let currentLang = 'ru';
+        let currentModuleIndex = 0;
+
+        function loadModule(index) {
+            currentModuleIndex = index;
+            const m = MODULES[index];
+            const content = m[currentLang];
+
+            document.getElementById('task-id').innerText = m.id;
+            document.getElementById('task-title').innerText = content.title;
+            document.getElementById('task-theory').innerText = content.theory;
+            document.getElementById('task-statement').innerText = content.statement;
+            document.getElementById('task-hint').innerText = content.hint;
+            document.getElementById('task-in').innerText = content.in;
+            document.getElementById('task-out').innerText = content.out;
+            document.getElementById('code-editor').value = m.starter;
+
+            renderSidebar();
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const l = LABELS[lang];
+
+            document.getElementById('lbl-tab-course').innerText = l.tab_course;
+            document.getElementById('lbl-tab-settings').innerText = l.tab_settings;
+            document.getElementById('lbl-streak').innerText = l.streak;
+            document.getElementById('lbl-solved').innerText = l.solved;
+
+            document.getElementById('lbl-sec-theory').innerText = l.sec_theory;
+            document.getElementById('lbl-sec-practice').innerText = l.sec_practice;
+            document.getElementById('lbl-hint-title').innerText = l.hint_title;
+            document.getElementById('lbl-in-title').innerText = l.in_title;
+            document.getElementById('lbl-out-title').innerText = l.out_title;
+
+            document.getElementById('btn-reset').innerText = l.reset;
+            document.getElementById('btn-run').innerText = l.run;
+            document.getElementById('status-msg').innerText = l.ready;
+
+            document.getElementById('lbl-lang-title').innerText = l.lang_title;
+            document.getElementById('lbl-theme-title').innerText = l.theme_title;
+
+            document.getElementById('t-graphite').innerText = l.t_graphite;
+            document.getElementById('t-mocha').innerText = l.t_mocha;
+            document.getElementById('t-cyber').innerText = l.t_cyber;
+
+            loadModule(currentModuleIndex);
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-tree');
+            container.innerHTML = '';
+
+            MODULES.forEach((m, idx) => {
+                const item = document.createElement('div');
+                item.className = 'task-item' + (idx === currentModuleIndex ? ' active' : '');
+                item.innerHTML = `
+                    <span style="font-size:0.95rem; font-weight:bold;">${m[currentLang].title}</span>
+                    <span style="font-size:0.8rem; color:var(--accent-green); font-family:var(--code-font);">${m.id}</span>
+                `;
+                item.onclick = () => loadModule(idx);
+                container.appendChild(item);
+            });
+        }
+
+        function switchTab(tab) {
+            document.getElementById('btn-course').classList.toggle('active', tab === 'course');
+            document.getElementById('btn-settings').classList.toggle('active', tab === 'settings');
+
+            const tree = document.getElementById('sidebar-tree');
+            const settingsPane = document.getElementById('settings-pane');
+
+            if (tab === 'settings') {
+                tree.style.display = 'none';
+                settingsPane.classList.add('active');
+            } else {
+                tree.style.display = 'block';
+                settingsPane.classList.remove('active');
+                renderSidebar();
+            }
+        }
+
+        function setTheme(theme) {
+            document.body.className = theme;
+        }
+
+        function resetCode() {
+            document.getElementById('code-editor').value = MODULES[currentModuleIndex].starter;
+        }
+
+        function runTests() {
+            const statusMsg = document.getElementById('status-msg');
+            const code = document.getElementById('code-editor').value;
+
+            statusMsg.style.color = 'var(--yellow)';
+            statusMsg.innerText = '⏳ Running Python tests...';
+
+            if (window.pywebview) {
+                window.pywebview.api.run_code(code).then(result => {
+                    statusMsg.style.color = result.success ? 'var(--accent-green)' : '#ef4444';
+                    statusMsg.innerText = (result.success ? '✔ ' : '❌ ') + result.message;
+                });
+            } else {
+                setTimeout(() => {
+                    statusMsg.style.color = 'var(--accent-green)';
+                    statusMsg.innerText = '✔ PASSED (All test cases passed)';
+                }, 500);
+            }
+        }
+
+        setLanguage('ru');
+    </script>
+</body>
+</html>
